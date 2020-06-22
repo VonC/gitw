@@ -1,0 +1,9 @@
+#!/bin/bash
+
+VERSION="0.0.1"
+gitver=$(git describe --long --tags --dirty --always)
+username=$(id -u)
+dtStamp="$(date '+%Y/%m/%d %H-%M-%S')"
+dirname=${PWD##*/} 
+
+go build -ldflags "-X \"${dirname}/version.GitTag=${gitver}\" -X \"${dirname}/version.BuildUser=${username}\" -X \"${dirname}/version.Version=${VERSION}\" -X \"${dirname}/version.BuildDate=${dtStamp}\""
