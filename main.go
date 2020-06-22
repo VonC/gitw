@@ -307,9 +307,6 @@ func (ub *usersBase) askUserID() *user {
 		prompt.OptionCompletionOnDown(),
 		prompt.OptionSetExitCheckerOnInput(c.exitIfUserSelected),
 	)
-	for range suggestions {
-		fmt.Println("_")
-	}
 	fmt.Println("Please select Sync command.")
 	p.Run()
 	ub.userAsked = true
