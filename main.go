@@ -115,9 +115,6 @@ func getSSHConnection() sship {
 	if verbose {
 		fmt.Printf("getSSHConnection res='%s'\n", res)
 	}
-	if !strings.HasPrefix(res, "10.196.") && !strings.HasPrefix(res, "10.243.") {
-		res = ""
-	}
 	//return sship("")
 	return sship(res)
 }
