@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"gitw/internal/shell"
-	"gitw/internal/syscall"
+	"gitw/internal/xregexp"
 
 	"gitw/version"
 
@@ -171,17 +171,6 @@ type choice struct {
 
 var re = regexp.MustCompile(`(?m)^(?P<ip>(\d+\.?)+)~(?P<name>.*?)~(?P<email>(.*?)@(.*))`)
 
-// https://stackoverflow.com/questions/20750843/using-named-matches-from-go-regex
-func findNamedMatches(regex *regexp.Regexp, str string) map[string]string {
-	match := regex.FindStringSubmatch(str)
-
-	results := map[string]string{}
-	for i, name := range match {
-		results[regex.SubexpNames()[i]] = name
-	}
-	return results
-}
-
 func newUsersBase(file string) *usersBase {
 
 	sc := &usersBase{
@@ -208,7 +197,7 @@ func newUsersBase(file string) *usersBase {
 		if line, prefix, err = reader.ReadLine(); err != nil {
 			break
 		}
-		matches := findNamedMatches(re, string(line))
+		matches := xregexp.FindNamedMatches(re, string(line))
 		if len(matches) > 0 && !prefix {
 			// fmt.Printf("line '%s', matches '%+v'\n", string(line), matches)
 			// fmt.Printf("ip '%s', name '%s', email '%s'\n", matches["ip"], matches["name"], matches["email"])
@@ -394,7 +383,7 @@ func (b *bash) getUser() *user {
 		if line, prefix, err = reader.ReadLine(); err != nil {
 			break
 		}
-		matches := findNamedMatches(rebash, string(line))
+		matches := xregexp.FindNamedMatches(rebash, string(line))
 		if len(matches) > 0 && !prefix {
 			if verbose {
 				fmt.Printf("BASH line '%s', matches '%+v'\n", string(line), matches)
