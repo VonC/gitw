@@ -127,11 +127,12 @@ type user struct {
 
 type users []*user
 
-func (us users) addUser(u *user, ip sship) {
+func (us users) addUser(u *user, ip sship) users {
 	if !us.hasUser(u) {
 		us = append(us, u)
 	}
 	u.setSSHIP(ip)
+	return us
 }
 
 func (us users) hasUser(u *user) bool {
@@ -212,7 +213,7 @@ func newUsersBase(file string) *usersBase {
 			// fmt.Printf("line '%s', matches '%+v'\n", string(line), matches)
 			// fmt.Printf("ip '%s', name '%s', email '%s'\n", matches["ip"], matches["name"], matches["email"])
 			u := &user{name: matches["name"], email: matches["email"]}
-			sc.users.addUser(u, sship(matches["ip"]))
+			sc.users = sc.users.addUser(u, sship(matches["ip"]))
 		}
 	}
 	if err == io.EOF {
@@ -349,7 +350,7 @@ func (ub *usersBase) recordUser(u *user, ip sship) {
 	if ip == "" {
 		ip = sship("0.0.0.0")
 	}
-	ub.users.addUser(u, ip)
+	ub.users = ub.users.addUser(u, ip)
 	// https://stackoverflow.com/questions/31050656/can-not-replace-the-content-of-a-csv-file-in-go
 	fi, err := os.OpenFile(ub.gitusers, os.O_WRONLY|os.O_CREATE, 0775)
 	if err != nil {
