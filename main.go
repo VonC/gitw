@@ -122,12 +122,43 @@ func getSSHConnection() sship {
 type user struct {
 	name  string
 	email string
+	ip    sship
+}
+
+type users []*user
+
+func (us users) addUser(u *user, ip sship) {
+	if !us.hasUser(u) {
+		us = append(us, u)
+	}
+	u.setSSHIP(ip)
+}
+
+func (us users) hasUser(u *user) bool {
+	for _, auser := range us {
+		if auser.email == u.email {
+			return true
+		}
+	}
+	return false
+}
+
+func (u *user) setSSHIP(ip sship) {
+	if !ip.isNul() || u.ip.isNul() {
+		u.ip = ip
+	}
+}
+
+func (ip sship) isNul() bool {
+	if ip == "" || ip == "0.0.0.0" {
+		return true
+	}
+	return false
 }
 
 type usersBase struct {
 	gitusers  string
-	users     []*user
-	ips       []sship
+	users     users
 	userAsked bool
 }
 
@@ -155,7 +186,6 @@ func newUsersBase(file string) *usersBase {
 	sc := &usersBase{
 		gitusers:  file,
 		users:     []*user{},
-		ips:       []sship{},
 		userAsked: false,
 	}
 
@@ -181,9 +211,8 @@ func newUsersBase(file string) *usersBase {
 		if len(matches) > 0 && !prefix {
 			// fmt.Printf("line '%s', matches '%+v'\n", string(line), matches)
 			// fmt.Printf("ip '%s', name '%s', email '%s'\n", matches["ip"], matches["name"], matches["email"])
-			sc.ips = append(sc.ips, sship(matches["ip"]))
 			u := &user{name: matches["name"], email: matches["email"]}
-			sc.users = append(sc.users, u)
+			sc.users.addUser(u, sship(matches["ip"]))
 		}
 	}
 	if err == io.EOF {
@@ -196,15 +225,15 @@ func newUsersBase(file string) *usersBase {
 }
 
 func (ub *usersBase) getUser(sship sship) *user {
-	for i, ip := range ub.ips {
+	for _, u := range ub.users {
 		if verbose {
-			fmt.Printf("ip '%s' vs sship '%s'\n", ip, sship)
+			fmt.Printf("ip '%s' vs sship '%s'\n", u.ip, sship)
 		}
-		if ip == sship {
+		if u.ip == sship {
 			if verbose {
-				fmt.Printf("i '%d' users '%+v'\n", i, ub.users)
+				fmt.Printf("User found for IP '%s': '%s'\n", sship, u)
 			}
-			return ub.users[i]
+			return u
 		}
 	}
 	return nil
@@ -320,8 +349,7 @@ func (ub *usersBase) recordUser(u *user, ip sship) {
 	if ip == "" {
 		ip = sship("0.0.0.0")
 	}
-	ub.users = append(ub.users, u)
-	ub.ips = append(ub.ips, ip)
+	ub.users.addUser(u, ip)
 	// https://stackoverflow.com/questions/31050656/can-not-replace-the-content-of-a-csv-file-in-go
 	fi, err := os.OpenFile(ub.gitusers, os.O_WRONLY|os.O_CREATE, 0775)
 	if err != nil {
@@ -333,9 +361,8 @@ func (ub *usersBase) recordUser(u *user, ip sship) {
 			log.Fatalf("Unable to close '%s': err='%+v'\n", fi.Name(), err)
 		}
 	}()
-	for i, ip := range ub.ips {
-		u := ub.users[i]
-		line := fmt.Sprintf("%s~%s~%s\n", ip, u.name, u.email)
+	for _, u := range ub.users {
+		line := fmt.Sprintf("%s~%s~%s\n", u.ip, u.name, u.email)
 		l, err := fi.WriteString(line)
 		if l == 0 || err != nil {
 			log.Printf("Unable to write line '%s' to '%s': (%d) err='%+v'\n", line, fi.Name(), l, err)
