@@ -5,10 +5,11 @@ package syscall
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"os/exec"
 	"strings"
 	"syscall"
+
+	"github.com/romana/rlog"
 )
 
 // ExecCmd starts a sh -c 'scmd' session.
@@ -20,23 +21,21 @@ func ExecCmd(scmd string) (berr *bytes.Buffer, bout *bytes.Buffer, err error) {
 	cmd.SysProcAttr = &syscall.SysProcAttr{}
 	cmd.SysProcAttr.CmdLine = "cmd /C " + scmd
 	//fmt.Printf("Execute '%s'\n%+v\n", scmd, cmd.SysProcAttr.CmdLine)
-	log.Printf("Execute '%s'\n", scmd)
-	fmt.Printf("Execute '%s'\n", scmd)
+	rlog.Debugf("Execute '%s'\n", scmd)
+	//fmt.Printf("Execute '%s'\n", scmd)
 	cmd.Stderr = berr
 	cmd.Stdout = bout
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
-		log.Printf("stdin error %s [%s]", err, berr.String())
+		//log.Printf("stdin error %s [%s]", err, berr.String())
+		err = fmt.Errorf("Stderr '%s':\n==> Lead to stdin:%w", berr.String(), err)
 		return berr, bout, err
 	}
-	err = stdin.Close()
-	if err != nil {
-		log.Printf("Close error ion stdin %s", err)
-		return berr, bout, err
-	}
+	stdin.Close()
 	err = cmd.Start()
 	if err != nil {
-		log.Printf("start error %s [%s]", err, berr.String())
+		//log.Printf("start error %s [%s]", err, berr.String())
+		err = fmt.Errorf("Stderr '%s':\n==> Lead to start:%w", berr.String(), err)
 		return berr, bout, err
 	}
 	if strings.HasPrefix(scmd, "start ") && strings.Contains(scmd, " /B ") {
@@ -44,7 +43,8 @@ func ExecCmd(scmd string) (berr *bytes.Buffer, bout *bytes.Buffer, err error) {
 	}
 	err = cmd.Wait()
 	if err != nil {
-		log.Printf("exit error %s [%s]", err, berr.String())
+		//log.Printf("Exit error %s [%s]", err, berr.String())
+		err = fmt.Errorf("Stderr '%s':\n==> Lead to:%w", berr.String(), err)
 	}
 	return berr, bout, err
 }
