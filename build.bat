@@ -5,6 +5,9 @@ for %%i in ("%~dp0.") do SET "script_dir=%%~fi"
 cd "%script_dir%"
 for %%i in ("%~dp0.") do SET "dirname=%%~ni"
 
+if not exist version\version.txt (
+    copy version\version.txt.tpl version\version.txt
+)
 if not exist buildversion.exe (
     go build version/cmd/buildversion.go
     if errorlevel 1 (
