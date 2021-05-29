@@ -8,10 +8,10 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strings"
 	"time"
 
+	"gitw/internal/shell"
 	"gitw/internal/syscall"
 
 	"gitw/version"
@@ -39,7 +39,7 @@ func main() {
 		os.Exit(0)
 	}
 	verbose = len(os.Getenv("verbose")) > 0
-	err = cleanOldBashFiles()
+	err = shell.CleanOldBashFiles(verbose)
 	if err != nil {
 		log.Fatalf("Unable to cleanup old /tmp/bash.* files: '%+v'", err)
 	}
@@ -530,21 +530,6 @@ func getBashSession() (*session, error) {
 	}
 	s := &session{pid: pid, date: date}
 	return s, nil
-}
-
-func cleanOldBashFiles() error {
-	if runtime.GOOS == "windows" {
-		return nil
-	}
-	cmd := `find /tmp -maxdepth 1 -user $USER -type f -mtime +1 -name "bash.*" -exec rm -f {} \;`
-	serr, sout, err := syscall.ExecCmd(cmd)
-	if verbose {
-		fmt.Printf("sout(%s)='%s'\n", cmd, sout.String())
-	}
-	if err != nil || sout.String() != "" || serr.String() != "" {
-		return fmt.Errorf("Error: unable to clean old /tmp/bash files: '%+v', serr '%s'", err, serr.String())
-	}
-	return nil
 }
 
 func newBash(s *session) *bash {
