@@ -2,3 +2,4 @@
 *.exe
 /bare/
 .gitusers
+version.txt

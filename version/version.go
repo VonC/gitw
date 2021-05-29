@@ -1,31 +1,31 @@
 package version
 
 import (
+	_ "embed"
 	"fmt"
+	"log"
+	"strings"
 )
 
 var (
-	// Version semver for syncrepos (set through go build -ldflags)
-	Version string
-	// BuildUser is the user login who initiated the build (set through go build -ldflags)
-	BuildUser string
-	// GitTag is the result of git describe (set through go build -ldflags)
-	GitTag string
-	// ExeDir is the folder where the executable has been launched
-	ExeDir string
-	// BuildDate is the date of build (set through go build -ldflags)
-	BuildDate string
-	// StartDate is the date when the executable has been launched
-	StartDate string
+	// Version : current version
+	Version string = strings.TrimSpace(version)
+	//go:embed version.txt
+	version string
+	ExeDir  string
 )
 
 // String displays all the version values
 func String() string {
+	vData := strings.Split(Version, "\n")
+	if len(vData) != 4 {
+		log.Fatalf("Embedded version data is badly formed or missing: %d lines instead of 4", len(vData))
+	}
 	res := ""
-	res = res + fmt.Sprintf("Git Tag   : %s\n", GitTag)
-	res = res + fmt.Sprintf("Build User: %s\n", BuildUser)
-	res = res + fmt.Sprintf("Version   : %s\n", Version)
-	res = res + fmt.Sprintf("BuildDate : %s\n", BuildDate)
-	res = res + fmt.Sprintf("ExeDir    : %s\n", ExeDir)
+	res = res + fmt.Sprintf("Version     : %s\n", vData[0])
+	res = res + fmt.Sprintf("BuildDate   : %s\n", vData[1])
+	res = res + fmt.Sprintf("BuildNumber : %s\n", vData[2])
+	res = res + fmt.Sprintf("Git Tag     : %s\n", vData[3])
+	res = res + fmt.Sprintf("ExeDir      : %s\n", ExeDir)
 	return res
 }
