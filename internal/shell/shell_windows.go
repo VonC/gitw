@@ -8,7 +8,7 @@ import (
 )
 
 func CleanOldBashFiles(verbose bool) error {
-	cmd := `find %TMP% -maxdepth 1 -type f -mtime +1 -name "bash.*" -exec rm -f {} \;`
+	cmd := `find %TMP% -maxdepth 1 -type f -mtime -1 -name "bash.*" -exec rm -f {} ;`
 	serr, sout, err := syscall.ExecCmd(cmd)
 	if verbose {
 		fmt.Printf("sout(%s)='%s'\n", cmd, sout.String())
