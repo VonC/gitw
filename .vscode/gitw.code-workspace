@@ -24,6 +24,7 @@
 		"peacock.color": "#832561",
 		"gopls": {
 		"build.buildFlags": [ "-tags=windows" ]
-		}
+		},
+		"files.eol": "\n"
 	}
 }
