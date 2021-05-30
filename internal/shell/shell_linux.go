@@ -5,7 +5,6 @@ package shell
 import (
 	"fmt"
 	"gitw/internal/syscall"
-	"os"
 )
 
 func CleanOldBashFiles(verbose bool) error {
@@ -21,5 +20,5 @@ func CleanOldBashFiles(verbose bool) error {
 }
 
 func TempPath() string {
-	return os.Getenv("/tmp")
+	return "/tmp"
 }
