@@ -422,7 +422,7 @@ type session struct {
 }
 
 func getBashSession() (*session, error) {
-	pid, err := shell.GetBashPID()
+	pid, err := shell.GetBashPID(verbose)
 	if err != nil {
 		return nil, err
 	}
