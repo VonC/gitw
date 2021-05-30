@@ -4,3 +4,4 @@
 .gitusers
 version.txt
 __debug_bin
+/buildversion
