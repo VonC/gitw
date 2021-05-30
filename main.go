@@ -50,12 +50,21 @@ func main() {
 	var user *user
 	ub := newUsersBase(gitusersPath())
 	if asship != "" {
+		if verbose {
+			fmt.Printf("No SSH connection detected\n")
+		}
 		user = ub.getUser(asship)
+		if verbose {
+			fmt.Printf("User based on sship '%s': '%+v'\n", asship, user)
+		}
 		if user == nil {
 			if check {
 				os.Exit(1)
 			}
 			user = ub.askUserID()
+			if verbose {
+				fmt.Printf("User after asked '%s', to be recorded in '%s''\n", user, ub.gitusers)
+			}
 			ub.recordUser(user, asship)
 		}
 	} else {
