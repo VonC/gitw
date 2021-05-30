@@ -77,6 +77,7 @@ func main() {
 		}
 		b := newBash(s)
 		user = b.getUser()
+
 		if user == nil {
 			if check {
 				os.Exit(1)
@@ -373,6 +374,9 @@ func (ub *usersBase) recordUser(u *user, ip sship) {
 var rebash = regexp.MustCompile(`(?m)^(?P<date>[^~]+)~(?P<name>.*?)~(?P<email>(.*?)@(.*))`)
 
 func (b *bash) getUser() *user {
+	if verbose {
+		fmt.Printf("Get user from tmp file '%s'\n", b.file)
+	}
 	fi, err := os.OpenFile(b.file, os.O_RDONLY|os.O_CREATE, 0660)
 	if err != nil {
 		log.Fatalf("Unable to open bash file '%s': '%+v'", b.file, err)
@@ -390,6 +394,9 @@ func (b *bash) getUser() *user {
 	var u *user
 	for {
 		if line, prefix, err = reader.ReadLine(); err != nil {
+			if verbose {
+				fmt.Printf("Error when reading line '%s' of '%s': '%+v'\n", line, b.file, err)
+			}
 			break
 		}
 		matches := xregexp.FindNamedMatches(rebash, string(line))
@@ -408,6 +415,8 @@ func (b *bash) getUser() *user {
 				fmt.Printf("sdate='%s', user='%s'\n", sdate, u)
 			}
 			break
+		} else if verbose {
+			fmt.Printf("BASH line '%s', No match for regex '%s'\n", string(line), rebash.String())
 		}
 	}
 	if err == io.EOF {
