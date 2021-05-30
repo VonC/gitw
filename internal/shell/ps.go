@@ -3,6 +3,8 @@ package shell
 import (
 	"fmt"
 	"gitw/internal/syscall"
+	"log"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -61,6 +63,29 @@ func GetPSStartDate(apid Pid, verbose bool) (*time.Time, error) {
 	if verbose {
 		fmt.Printf("stime='%s'\n", sdate)
 	}
+	dd := strings.Split(sdate, "+")
+	offset := ""
+	sep := ""
+	if len(dd) == 2 {
+		sdate = dd[0]
+		offset = dd[1]
+		sep = "+"
+	} else {
+		dd = strings.Split(sdate, "-")
+		if len(dd) == 2 {
+			sdate = dd[0]
+			offset = dd[1]
+			sep = "-"
+		} else {
+			log.Fatalf("Unable to extract offset from sdate '%s'", sdate)
+		}
+	}
+	var ioffset int
+	if ioffset, err = strconv.Atoi(offset); err != nil {
+		log.Fatalf("Unable to convert offset '%s' into int: %+v", offset, err)
+	}
+	ioffset = ioffset / 60
+	sdate = fmt.Sprintf("%s%s%02d", sdate, sep, ioffset)
 	// Wed Aug 28 10:16:24 2019
 	date, err := time.Parse("20060202150405.999999-07", sdate)
 	if err != nil {
