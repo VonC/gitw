@@ -49,3 +49,7 @@ func GetParentPS(apid Pid, verbose bool) (*Ps, error) {
 	}
 	return p, err
 }
+
+func TempPath() string {
+	return os.Getenv("TMP")
+}
