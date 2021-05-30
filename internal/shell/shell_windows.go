@@ -22,25 +22,30 @@ func CleanOldBashFiles(verbose bool) error {
 	return nil
 }
 
-// https://regex101.com/r/67F20E/1
-var repid = regexp.MustCompile(`(?m)^(?P<cmd>.*?)\s+\d+\s+(?P<pid>\d+)$`)
+// https://regex101.com/r/H5iUEd/1
+var repid = regexp.MustCompile(`(?m)^(?P<cmd>.*?)\s+(?P<ppid>\d+)\s+\d+\s*?$`)
 
-func GetParentPS(apid Pid) (*Ps, error) {
+func GetParentPS(apid Pid, verbose bool) (*Ps, error) {
 	spid := string(apid)
 	if spid == "" {
 		spid = fmt.Sprintf("%d", os.Getpid())
 	}
-	serr, sout, err := syscall.ExecCmd(fmt.Sprintf(`wmic process get processid,parentprocessid,executablepath|C:\Windows\System32\find.exe "%s"`, spid))
+	cmd := fmt.Sprintf(`wmic process get processid,parentprocessid,executablepath|C:\Windows\System32\find.exe "%s"`, spid)
+	serr, sout, err := syscall.ExecCmd(cmd)
 	if err != nil || serr.String() != "" {
 		err := fmt.Errorf("error: unable to get PID of current bash session: '%+v', serr '%s'", err, serr.String())
 		return nil, err
 	}
 	var p *Ps
-	matches := xregexp.FindNamedMatches(repid, sout.String())
+	res := sout.String()
+	matches := xregexp.FindNamedMatches(repid, res)
+	if verbose {
+		fmt.Printf("cmd='%s'\nparentps of '%s'='%+v'\nregexp='%s'\nmatches='%+v'\n", cmd, spid, res, repid.String(), matches)
+	}
 	if len(matches) > 0 {
-		p = &Ps{pid: Pid(matches["pid"]), cmd: matches["cmd"]}
+		p = &Ps{pid: Pid(matches["ppid"]), cmd: matches["cmd"]}
 	} else {
-		return nil, fmt.Errorf("error: unable to get ps from: '%s'", sout.String())
+		return nil, fmt.Errorf("error: unable to get ps from: '%s'", res)
 	}
 	return p, err
 }
