@@ -439,7 +439,7 @@ func getBashSession() (*session, error) {
 
 func newBash(s *session) *bash {
 	b := &bash{
-		file:    fmt.Sprintf("/tmp/bash.%s", s.pid),
+		file:    fmt.Sprintf("%s%cbash.%s", shell.TempPath(), filepath.Separator, s.pid),
 		session: s,
 	}
 	return b
