@@ -5,6 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Attach to Process GitW",
+            "type": "go",
+            "request": "attach",
+            "mode": "local",
+            "processId":"gitw.exe"
+        },
+        {
             "name": "Launch gitw",
             "type": "go",
             "request": "launch",
