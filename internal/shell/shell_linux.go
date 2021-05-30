@@ -5,6 +5,7 @@ package shell
 import (
 	"fmt"
 	"gitw/internal/syscall"
+	"os"
 )
 
 func CleanOldBashFiles(verbose bool) error {
@@ -17,4 +18,8 @@ func CleanOldBashFiles(verbose bool) error {
 		return fmt.Errorf("Error: unable to clean old /tmp/bash files: '%+v', serr '%s'", err, serr.String())
 	}
 	return nil
+}
+
+func TempPath() string {
+	return os.Getenv("/tmp")
 }
