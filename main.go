@@ -49,9 +49,10 @@ func main() {
 	}
 	var user *user
 	ub := newUsersBase(gitusersPath())
+	fmt.Printf("-----------\n%s\n", ub.users.String())
 	if asship != "" {
 		if verbose {
-			fmt.Printf("No SSH connection detected\n")
+			fmt.Printf("SSH connection detected: '%s'\n", asship)
 		}
 		user = ub.getUser(asship)
 		if verbose {
@@ -66,6 +67,12 @@ func main() {
 				fmt.Printf("User after asked '%s', to be recorded in '%s''\n", user, ub.gitusers)
 			}
 			ub.recordUser(user, asship)
+		} else if ub.hasMultipleEntries {
+			if verbose {
+				fmt.Printf("Multitple entries detected for '%s': record'\n", ub.gitusers)
+			}
+			ub.recordUser(user, asship)
+			ub.hasMultipleEntries = false
 		}
 	} else {
 		s, err := getBashSession()
@@ -137,40 +144,60 @@ type user struct {
 
 type users []*user
 
-func (us users) addUser(u *user, ip sship) users {
-	if !us.hasUser(u) {
-		us = append(us, u)
+func (us users) String() string {
+	res := fmt.Sprintf("%d users", len(us))
+	for _, u := range us {
+		res = res + fmt.Sprintf("\n%s, email '%s', ip '%s'", u.name, u.email, u.ip)
 	}
-	u.setSSHIP(ip)
+	return res
+}
+
+func (us users) addUser(u *user, ip sship) users {
+	auser := us.getUserFRomEmail(u.email)
+	if auser == nil {
+		auser = u
+		if verbose {
+			fmt.Printf("Add user '%s/%s' to %d users\n", auser.name, auser.ip, len(us))
+		}
+		us = append(us, auser)
+	}
+	if verbose {
+		fmt.Printf("Update user '%s', IP '%s' => new IP '%s'\n", auser.name, auser.ip, ip)
+	}
+	auser.setSSHIP(ip)
 	return us
 }
 
-func (us users) hasUser(u *user) bool {
+func (us users) getUserFRomEmail(email string) *user {
 	for _, auser := range us {
-		if auser.email == u.email {
-			return true
+		if auser.email == email {
+			return auser
 		}
 	}
-	return false
+	return nil
 }
 
 func (u *user) setSSHIP(ip sship) {
 	if !ip.isNul() || u.ip.isNul() {
+		if verbose {
+			fmt.Printf("User old ip '%s', new ip '%s'\n", u.ip, ip)
+		}
 		u.ip = ip
 	}
 }
 
 func (ip sship) isNul() bool {
-	if ip == "" || ip == "0.0.0.0" {
+	if string(ip) == "" || string(ip) == "0.0.0.0" {
 		return true
 	}
 	return false
 }
 
 type usersBase struct {
-	gitusers  string
-	users     users
-	userAsked bool
+	gitusers           string
+	users              users
+	userAsked          bool
+	hasMultipleEntries bool
 }
 
 type choice struct {
@@ -184,9 +211,10 @@ var re = regexp.MustCompile(`(?m)^(?P<ip>(\d+\.?)+)~(?P<name>.*?)~(?P<email>(.*?
 func newUsersBase(file string) *usersBase {
 
 	sc := &usersBase{
-		gitusers:  file,
-		users:     []*user{},
-		userAsked: false,
+		gitusers:           file,
+		users:              []*user{},
+		userAsked:          false,
+		hasMultipleEntries: false,
 	}
 
 	fi, err := os.OpenFile(sc.gitusers, os.O_RDONLY|os.O_CREATE, 0660)
@@ -212,7 +240,20 @@ func newUsersBase(file string) *usersBase {
 			// fmt.Printf("line '%s', matches '%+v'\n", string(line), matches)
 			// fmt.Printf("ip '%s', name '%s', email '%s'\n", matches["ip"], matches["name"], matches["email"])
 			u := &user{name: matches["name"], email: matches["email"]}
+			l := len(sc.users)
+			if verbose {
+				fmt.Printf("***\nUsers before\n***\n%s\n", sc.users.String())
+			}
 			sc.users = sc.users.addUser(u, sship(matches["ip"]))
+			if verbose {
+				fmt.Printf("*--*--*\nUsers AFTER\n*--*--*\n%s\n", sc.users.String())
+			}
+			if len(sc.users) == l {
+				if verbose {
+					fmt.Printf("Multiple user '%s' detected from '%s'\n", u.name, sc.gitusers)
+				}
+				sc.hasMultipleEntries = true
+			}
 		}
 	}
 	if err == io.EOF {
@@ -229,7 +270,7 @@ func (ub *usersBase) getUser(sship sship) *user {
 		if verbose {
 			fmt.Printf("ip '%s' vs sship '%s'\n", u.ip, sship)
 		}
-		if u.ip == sship {
+		if string(u.ip) == string(sship) {
 			if verbose {
 				fmt.Printf("User found for IP '%s': '%s'\n", sship, u)
 			}
@@ -346,7 +387,7 @@ func (ub *usersBase) recordUser(u *user, ip sship) {
 	if u == nil {
 		return
 	}
-	if ip == "" {
+	if string(ip) == "" {
 		ip = sship("0.0.0.0")
 	}
 	ub.users = ub.users.addUser(u, ip)
@@ -362,6 +403,9 @@ func (ub *usersBase) recordUser(u *user, ip sship) {
 		}
 	}()
 	for _, u := range ub.users {
+		if verbose {
+			fmt.Printf("Write user '%s' for ip '%s' to '%s'\n", u.name, u.ip, ub.gitusers)
+		}
 		line := fmt.Sprintf("%s~%s~%s\n", u.ip, u.name, u.email)
 		l, err := fi.WriteString(line)
 		if l == 0 || err != nil {
@@ -409,7 +453,7 @@ func (b *bash) getUser() *user {
 			if sdate == b.dateFormatted() {
 				u = &user{name: matches["name"], email: matches["email"]}
 			} else {
-				fmt.Printf("BASH found, but wrong date: '%s' vs. '%s", sdate, b.dateFormatted())
+				fmt.Printf("BASH found, but wrong date: '%s' vs. '%s'\n", sdate, b.dateFormatted())
 			}
 			if verbose {
 				fmt.Printf("sdate='%s', user='%s'\n", sdate, u)
