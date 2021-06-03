@@ -16,7 +16,7 @@ func CleanOldBashFiles(verbose bool) error {
 		fmt.Printf("sout(%s)='%s'\n", cmd, sout.String())
 	}
 	if err != nil || sout.String() != "" || serr.String() != "" {
-		return fmt.Errorf("error: unable to clean old %TMP%/bash files: '%+v', serr '%s'", err, serr.String())
+		return fmt.Errorf("error: unable to clean old %%TMP%%/bash files: '%+v', serr '%s'", err, serr.String())
 	}
 	return nil
 }
