@@ -2,8 +2,10 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -421,8 +423,12 @@ func (b *bash) getUser() *user {
 	if verbose {
 		fmt.Printf("Get user from tmp file '%s'\n", b.file)
 	}
-	fi, err := os.OpenFile(b.file, os.O_RDONLY|os.O_CREATE, 0660)
+	fi, err := os.OpenFile(b.file, os.O_RDONLY, 0660)
 	if err != nil {
+		var pathError *fs.PathError
+		if errors.As(err, &pathError) {
+			return nil
+		}
 		log.Fatalf("Unable to open bash file '%s': '%+v'", b.file, err)
 	}
 	// close fi on exit and check for its returned error
