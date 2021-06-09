@@ -208,7 +208,7 @@ type choice struct {
 	mustExit bool
 }
 
-var re = regexp.MustCompile(`(?m)^(?P<ip>(\d+\.?)+)~(?P<name>.*?)~(?P<email>(.*?)@(.*))`)
+var re = regexp.MustCompile(`(?m)^(?P<ip>[^ ~]+)~(?P<name>.*?)~(?P<email>(.*?)@(.*))`)
 
 func newUsersBase(file string) *usersBase {
 
