@@ -394,7 +394,7 @@ func (ub *usersBase) recordUser(u *user, ip sship) {
 	}
 	ub.users = ub.users.addUser(u, ip)
 	// https://stackoverflow.com/questions/31050656/can-not-replace-the-content-of-a-csv-file-in-go
-	fi, err := os.OpenFile(ub.gitusers, os.O_WRONLY|os.O_CREATE, 0775)
+	fi, err := os.Create(ub.gitusers)
 	if err != nil {
 		log.Fatalf("Unable to open write file '%s': '%+v'", ub.gitusers, err)
 	}
