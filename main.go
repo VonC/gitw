@@ -208,9 +208,7 @@ type choice struct {
 	mustExit bool
 }
 
-// var re = regexp.MustCompile(`(?m)^(?P<ip>(\d+\.?)+)~(?P<name>.*?)~(?P<email>(.*?)@(.*))`)
-// https://regex101.com/r/afmMRZ/1
-var re = regexp.MustCompile(`(?P<ips>(?:(?:(?:\d{1,3}\.){3}\d{1,3}),?)+)|(?P<email>[^~]+@[^~]+)|(?P<name>[^~@]+ [^@~]+)`)
+var re = regexp.MustCompile(`(?m)^(?P<ip>(\d+\.?)+)~(?P<name>.*?)~(?P<email>(.*?)@(.*))`)
 
 func newUsersBase(file string) *usersBase {
 
@@ -239,7 +237,7 @@ func newUsersBase(file string) *usersBase {
 		if line, prefix, err = reader.ReadLine(); err != nil {
 			break
 		}
-		matches := xregexp.FindAllNamedMatches(re, string(line))
+		matches := xregexp.FindNamedMatches(re, string(line))
 		if len(matches) > 0 && !prefix {
 			// fmt.Printf("line '%s', matches '%+v'\n", string(line), matches)
 			// fmt.Printf("ip '%s', name '%s', email '%s'\n", matches["ip"], matches["name"], matches["email"])
