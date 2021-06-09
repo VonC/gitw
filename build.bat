@@ -4,6 +4,9 @@ setlocal enabledelayedexpansion
 for %%i in ("%~dp0.") do SET "script_dir=%%~fi"
 cd "%script_dir%"
 for %%i in ("%~dp0.") do SET "dirname=%%~ni"
+if exist senv.bat (
+    call senv.bat
+)
 
 if not exist version\version.txt (
     copy version\version.txt.tpl version\version.txt
@@ -28,6 +31,9 @@ if "%1" == "amd" (
     if errorlevel 1 (
         echo ERROR BUILD 1>&2
         exit /b 1
+    )
+    if not "%amdscp%" == "" (
+        scp %dirname% %amdscp%
     )
     goto:eof
 )

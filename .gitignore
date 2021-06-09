@@ -6,3 +6,4 @@ version.txt
 __debug_bin
 /buildversion
 *.ori
+senv.bat
