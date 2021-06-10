@@ -41,7 +41,11 @@ func test() {
 		defer f.Close()
 	}
 
-	initialModel := model{0, false, false}
+	initialModel := model{
+		Choice:   0,
+		Chosen:   false,
+		Quitting: false,
+	}
 	p := tea.NewProgram(initialModel)
 	if err := p.Start(); err != nil {
 		fmt.Println("could not start program:", err)
@@ -71,7 +75,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// Make sure these keys always quit
 	if msg, ok := msg.(tea.KeyMsg); ok {
 		k := msg.String()
-		if k == "q" || k == "esc" || k == "ctrl+c" {
+		if k == "esc" || k == "ctrl+c" {
 			m.Quitting = true
 			return m, tea.Quit
 		}
@@ -96,7 +100,6 @@ func (m model) View() string {
 	if !m.Chosen {
 		s = choicesView(m)
 	} else {
-		m.Quitting = true
 		return ""
 	}
 	return indent.String("\n"+s+"\n\n", 2)
