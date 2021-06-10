@@ -41,7 +41,7 @@ func test() {
 		defer f.Close()
 	}
 
-	initialModel := model{0, false, 0, false, false}
+	initialModel := model{0, false, 0, false}
 	p := tea.NewProgram(initialModel)
 	if err := p.Start(); err != nil {
 		fmt.Println("could not start program:", err)
@@ -60,7 +60,6 @@ type model struct {
 	Choice   int
 	Chosen   bool
 	Frames   int
-	Loaded   bool
 	Quitting bool
 }
 
