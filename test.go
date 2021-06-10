@@ -41,12 +41,7 @@ func test() {
 		defer f.Close()
 	}
 
-	initialModel := model{
-		Choice:   0,
-		Chosen:   false,
-		Quitting: false,
-	}
-	p := tea.NewProgram(initialModel)
+	p := tea.NewProgram(initialModel())
 	if err := p.Start(); err != nil {
 		fmt.Println("could not start program:", err)
 	}
@@ -64,6 +59,15 @@ type model struct {
 	Choice   int
 	Chosen   bool
 	Quitting bool
+}
+
+func initialModel() tea.Model {
+	initialModel := model{
+		Choice:   0,
+		Chosen:   false,
+		Quitting: false,
+	}
+	return initialModel
 }
 
 func (m model) Init() tea.Cmd {
