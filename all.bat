@@ -10,7 +10,4 @@ if errorlevel 1 (
     echo ERROR BUILD 1>&2
     exit /b 1
 )
-if exist senv.bat (
-    call senv.bat
-)
-call "%dirname%"
+call run.bat %*
