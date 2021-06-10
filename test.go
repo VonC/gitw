@@ -72,7 +72,7 @@ func initialModel() tea.Model {
 	ti.Width = 20
 
 	initialModel := model{
-		Choice:    0,
+		Choice:    -1,
 		Chosen:    false,
 		Quitting:  false,
 		textInput: ti,
@@ -130,11 +130,11 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 		case "down":
 			m.Choice += 1
 			if m.Choice > 3 {
-				m.Choice = 0
+				m.Choice = -1
 			}
 		case "up":
 			m.Choice -= 1
-			if m.Choice < 0 {
+			if m.Choice < -1 {
 				m.Choice = 3
 			}
 		case "enter":
