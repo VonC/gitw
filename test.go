@@ -18,10 +18,9 @@ import (
 
 // General stuff for styling the view
 var (
-	term    = termenv.ColorProfile()
-	keyword = makeFgStyle("211")
-	subtle  = makeFgStyle("241")
-	dot     = colorFg(" • ", "236")
+	term   = termenv.ColorProfile()
+	subtle = makeFgStyle("241")
+	dot    = colorFg(" • ", "236")
 )
 
 func test() {
@@ -85,7 +84,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if !m.Chosen {
 		return updateChoices(msg, m)
 	}
-	return updateChosen(msg, m)
+	m.Quitting = true
+	return m, tea.Quit
 }
 
 // The main view, which just calls the appropriate sub-view
@@ -98,7 +98,8 @@ func (m model) View() string {
 	if !m.Chosen {
 		s = choicesView(m)
 	} else {
-		s = chosenView(m)
+		m.Quitting = true
+		return ""
 	}
 	return indent.String("\n"+s+"\n\n", 2)
 }
@@ -130,21 +131,6 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-// Update loop for the second view after a choice has been made
-func updateChosen(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
-	switch msg.(type) {
-
-	case frameMsg:
-		if !m.Loaded {
-			m.Frames += 1
-			return m, frame()
-		}
-
-	}
-
-	return m, nil
-}
-
 // Sub-views
 
 // The first view, where you're choosing a task
@@ -164,29 +150,6 @@ func choicesView(m model) string {
 	)
 
 	return fmt.Sprintf(tpl, choices)
-}
-
-// The second view, after a task has been chosen
-func chosenView(m model) string {
-	var msg string
-
-	switch m.Choice {
-	case 0:
-		msg = fmt.Sprintf("Carrot planting?\n\nCool, we'll need %s and %s...", keyword("libgarden"), keyword("vegeutils"))
-	case 1:
-		msg = fmt.Sprintf("A trip to the market?\n\nOkay, then we should install %s and %s...", keyword("marketkit"), keyword("libshopping"))
-	case 2:
-		msg = fmt.Sprintf("Reading time?\n\nOkay, cool, then we’ll need a library. Yes, an %s.", keyword("actual library"))
-	default:
-		msg = fmt.Sprintf("It’s always good to see friends.\n\nFetching %s and %s...", keyword("social-skills"), keyword("conversationutils"))
-	}
-
-	label := "Downloading..."
-	if m.Loaded {
-		label = "Downloaded."
-	}
-
-	return msg + "\n\n" + label + "\n"
 }
 
 func checkbox(label string, checked bool) string {
