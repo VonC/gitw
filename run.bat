@@ -7,7 +7,7 @@ for %%i in ("%~dp0.") do SET "dirname=%%~ni"
 
 if "%1" == "amd" (
     shift
-    ssh -t -q wsl "bash -c 'ptest=1 PAGER_LOG=debug.log ./%dirname%'"
+    ssh -t -q wsl "bash -c 'source .senv; ./%dirname%'"
     goto:eof
 )
 if exist senv.bat (
