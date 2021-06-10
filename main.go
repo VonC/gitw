@@ -24,6 +24,10 @@ import (
 var verbose bool
 
 func main() {
+	if os.Getenv("ptest") != "" {
+		test()
+		os.Exit(0)
+	}
 	if len(os.Args) > 2 {
 		usage()
 	}
