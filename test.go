@@ -11,6 +11,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/muesli/reflow/indent"
 	"github.com/muesli/termenv"
@@ -56,16 +57,25 @@ func frame() tea.Cmd {
 }
 
 type model struct {
-	Choice   int
-	Chosen   bool
-	Quitting bool
+	Choice    int
+	Chosen    bool
+	Quitting  bool
+	textInput textinput.Model
 }
 
 func initialModel() tea.Model {
+
+	ti := textinput.NewModel()
+	ti.Placeholder = "Pikachu"
+	ti.Focus()
+	ti.CharLimit = 156
+	ti.Width = 20
+
 	initialModel := model{
-		Choice:   0,
-		Chosen:   false,
-		Quitting: false,
+		Choice:    0,
+		Chosen:    false,
+		Quitting:  false,
+		textInput: ti,
 	}
 	return initialModel
 }
@@ -147,7 +157,8 @@ func choicesView(m model) string {
 	tpl += subtle("j/k, up/down: select") + dot + subtle("enter: choose") + dot + subtle("q, esc: quit")
 
 	choices := fmt.Sprintf(
-		"%s\n%s\n%s\n%s",
+		"%s\n%s\n%s\n%s\n%s",
+		m.textInput.View(),
 		checkbox("Plant carrots", c == 0),
 		checkbox("Go to the market", c == 1),
 		checkbox("Read something", c == 2),
