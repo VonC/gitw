@@ -10,4 +10,5 @@ require (
 	github.com/muesli/reflow v0.3.0
 	github.com/muesli/termenv v0.8.1
 	github.com/romana/rlog v0.0.0-20171115192701-f018bc92e7d7
+	golang.org/x/sys v0.0.0-20210510120138-977fb7262007 // indirect
 )
