@@ -117,7 +117,6 @@ func (m model) View() string {
 	var s string
 	if m.Quitting {
 		return ""
-		//return "\n  See you later!\n\n"
 	}
 	if !m.Chosen {
 		s = choicesView(&m)
