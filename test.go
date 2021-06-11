@@ -9,12 +9,14 @@ package main
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 
 	_ "embed"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/lithammer/fuzzysearch/fuzzy"
 	"github.com/muesli/reflow/indent"
 	"github.com/muesli/termenv"
 )
@@ -62,6 +64,7 @@ type model struct {
 	filtered  []string
 	nvis      int
 	Shift     int
+	lastValue string
 }
 
 func initialModel() tea.Model {
@@ -168,7 +171,30 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 
 	var cmd tea.Cmd
 	m.textInput, cmd = m.textInput.Update(msg)
+	v := m.textInput.Value()
+	if v != "" && v != m.lastValue {
+		m.filtered = m.filter(v)
+		m.Choice = -1
+		m.Shift = 0
+		m.lastValue = v
+	}
 	return m, cmd
+}
+
+func (m model) filter(v string) []string {
+	matches := fuzzy.RankFindNormalizedFold(v, m.choices)
+	sort.Sort(matches) // [{whl wheel 2 2} {whl cartwheel 6 0}]
+	res := make([]string, 0)
+	for _, match := range matches {
+		if match.Distance < 0 {
+			continue
+		}
+		if match.Distance == len(m.choices[match.OriginalIndex]) {
+			continue
+		}
+		res = append(res, match.Target)
+	}
+	return res
 }
 
 // Sub-views
