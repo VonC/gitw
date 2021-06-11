@@ -13,5 +13,5 @@ if "%1" == "amd" (
 if exist senv.bat (
     call senv.bat
 )
-@echo on
+rem @echo on
 call "%dirname%.exe" %*
