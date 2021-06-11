@@ -122,6 +122,14 @@ func (m model) View() string {
 	return indent.String("\n"+s+"\n\n", 2)
 }
 
+func (m *model) getNVisible() int {
+	l := len(m.filtered)
+	if l < m.nvis {
+		return l
+	}
+	return m.nvis
+}
+
 // Sub-update functions
 
 // Update loop for the first view where you're choosing a task.
