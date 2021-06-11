@@ -163,21 +163,19 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 
 // The first view, where you're choosing a task
 func choicesView(m model) string {
-	c := m.Choice
 
 	tpl := "What to do today?\n\n"
 	tpl += "%s\n\n"
-	tpl += subtle("j/k, up/down: select") + dot + subtle("enter: choose") + dot + subtle("q, esc: quit")
+	tpl += subtle("<esc>: clean/exit, up/down: select") + dot + subtle("enter: choose")
 
-	choices := fmt.Sprintf(
-		"%s\n%s\n%s\n%s\n%s",
-		m.textInput.View(),
-		checkbox("Plant carrots", c == 0),
-		checkbox("Go to the market", c == 1),
-		checkbox("Read something", c == 2),
-		checkbox("See friends", c == 3),
-	)
-
+	choice := m.Choice
+	choices := m.textInput.View()
+	nvis := m.getNVisible()
+	for i := 0; i < m.nvis; i++ {
+		if i < nvis {
+			choices = choices + "\n" + checkbox(m.filtered[i], i == choice)
+		}
+	}
 	return fmt.Sprintf(tpl, choices)
 }
 
