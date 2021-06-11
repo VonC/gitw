@@ -134,19 +134,20 @@ func (m *model) getNVisible() int {
 
 // Update loop for the first view where you're choosing a task.
 func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
+	nvis := m.getNVisible() - 1
 	switch msg := msg.(type) {
 
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "down":
 			m.Choice += 1
-			if m.Choice > 3 {
+			if m.Choice > nvis {
 				m.Choice = -1
 			}
 		case "up":
 			m.Choice -= 1
 			if m.Choice < -1 {
-				m.Choice = 3
+				m.Choice = nvis
 			}
 		case "enter":
 			m.Chosen = true
