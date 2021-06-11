@@ -66,7 +66,7 @@ type model struct {
 func initialModel() tea.Model {
 
 	ti := textinput.NewModel()
-	ti.Placeholder = "Pikachu"
+	ti.Placeholder = "<Select User>"
 	ti.Focus()
 	ti.CharLimit = 156
 	ti.Width = 20
