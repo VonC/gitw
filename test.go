@@ -9,6 +9,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
+
+	_ "embed"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -21,6 +24,8 @@ var (
 	term   = termenv.ColorProfile()
 	subtle = makeFgStyle("241")
 	dot    = colorFg(" • ", "236")
+	//go:embed users.txt
+	usersf string
 )
 
 func test() {
@@ -41,6 +46,7 @@ func test() {
 		defer f.Close()
 	}
 
+	// https://www.name-generator.org.uk/quick/
 	p := tea.NewProgram(initialModel())
 	if err := p.Start(); err != nil {
 		fmt.Println("could not start program:", err)
@@ -52,6 +58,9 @@ type model struct {
 	Chosen    bool
 	Quitting  bool
 	textInput textinput.Model
+	choices   []string
+	filtered  []string
+	nvis      int
 }
 
 func initialModel() tea.Model {
@@ -67,7 +76,10 @@ func initialModel() tea.Model {
 		Chosen:    false,
 		Quitting:  false,
 		textInput: ti,
+		choices:   strings.Split(usersf, "\n"),
+		nvis:      8,
 	}
+	initialModel.filtered = initialModel.choices
 	return initialModel
 }
 
