@@ -9,7 +9,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -48,14 +47,6 @@ func test() {
 	}
 }
 
-type frameMsg struct{}
-
-func frame() tea.Cmd {
-	return tea.Tick(time.Second/60, func(time.Time) tea.Msg {
-		return frameMsg{}
-	})
-}
-
 type model struct {
 	Choice    int
 	Chosen    bool
@@ -81,7 +72,7 @@ func initialModel() tea.Model {
 }
 
 func (m model) Init() tea.Cmd {
-	return frame()
+	return textinput.Blink
 }
 
 // Main update function.
@@ -139,11 +130,12 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 		case "enter":
 			m.Chosen = true
-			return m, frame()
+			return m, nil
 		}
 	}
-
-	return m, nil
+	var cmd tea.Cmd
+	m.textInput, cmd = m.textInput.Update(msg)
+	return m, cmd
 }
 
 // Sub-views
