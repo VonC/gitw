@@ -139,6 +139,7 @@ func (m *model) getNVisible() int {
 // Update loop for the first view where you're choosing a task.
 func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	lfiltered := len(m.filtered)
+	esc := false
 	switch msg := msg.(type) {
 
 	case tea.KeyMsg:
@@ -160,6 +161,16 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 		case "enter":
 			m.Chosen = true
 			return m, nil
+		case "esc":
+			if m.Choice >= 0 {
+				m.Choice = -1
+				m.textInput.SetValue(m.lastValue)
+				esc = true
+			} else if m.textInput.Value() != "" {
+				m.filtered = m.choices
+				m.textInput.SetValue("")
+				m.lastValue = ""
+			}
 		}
 	}
 
@@ -175,7 +186,7 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	m.textInput, cmd = m.textInput.Update(msg)
 	v := m.textInput.Value()
-	if v != "" && v != m.lastValue && (m.Choice < 0 || v != m.filtered[m.Choice]) {
+	if v != "" && (v != m.lastValue || esc) && (m.Choice < 0 || v != m.filtered[m.Choice]) {
 		m.filtered = m.filter(v)
 		m.Choice = -1
 		m.Shift = 0
