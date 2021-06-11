@@ -148,27 +148,27 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			m.Choice += 1
 			if m.Choice >= lfiltered {
 				m.Choice = -1
-				m.textInput.SetValue(m.lastValue)
+				m.updateText(m.lastValue)
 			} else {
-				m.textInput.SetValue(m.filtered[m.Choice])
+				m.updateText(m.filtered[m.Choice])
 			}
 		case "up", "shift+tab":
 			m.Choice -= 1
 			if m.Choice <= -1 {
 				m.Choice = lfiltered - 1
 			}
-			m.textInput.SetValue(m.filtered[m.Choice])
+			m.updateText(m.filtered[m.Choice])
 		case "enter":
 			m.Chosen = true
 			return m, nil
 		case "esc":
 			if m.Choice >= 0 {
 				m.Choice = -1
-				m.textInput.SetValue(m.lastValue)
+				m.updateText(m.lastValue)
 				esc = true
 			} else if m.textInput.Value() != "" {
 				m.filtered = m.choices
-				m.textInput.SetValue("")
+				m.updateText("")
 				m.lastValue = ""
 			}
 		}
@@ -193,6 +193,11 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 		m.lastValue = v
 	}
 	return m, cmd
+}
+
+func (m *model) updateText(text string) {
+	m.textInput.SetValue(text)
+	m.textInput.SetCursor(len(text))
 }
 
 func (m model) filter(v string) []string {
