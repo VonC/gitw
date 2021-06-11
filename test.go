@@ -61,6 +61,7 @@ type model struct {
 	choices   []string
 	filtered  []string
 	nvis      int
+	Shift     int
 }
 
 func initialModel() tea.Model {
@@ -78,9 +79,10 @@ func initialModel() tea.Model {
 		textInput: ti,
 		choices:   strings.Split(usersf, "\n"),
 		nvis:      8,
+		Shift:     0,
 	}
 	initialModel.filtered = initialModel.choices
-	return initialModel
+	return &initialModel
 }
 
 func (m model) Init() tea.Cmd {
@@ -115,7 +117,7 @@ func (m model) View() string {
 		//return "\n  See you later!\n\n"
 	}
 	if !m.Chosen {
-		s = choicesView(m)
+		s = choicesView(&m)
 	} else {
 		return ""
 	}
@@ -154,6 +156,16 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 	}
+
+	nvis := m.getNVisible()
+	shift := m.Choice - nvis + 1
+	if shift > m.Shift {
+		m.Shift = shift
+	}
+	if m.Choice >= 0 && m.Choice+nvis < m.Shift+nvis {
+		m.Shift = m.Choice
+	}
+
 	var cmd tea.Cmd
 	m.textInput, cmd = m.textInput.Update(msg)
 	return m, cmd
@@ -162,7 +174,7 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 // Sub-views
 
 // The first view, where you're choosing a task
-func choicesView(m model) string {
+func choicesView(m *model) string {
 
 	tpl := "What to do today?\n\n"
 	tpl += "%s\n\n"
@@ -171,10 +183,9 @@ func choicesView(m model) string {
 	choice := m.Choice
 	choices := m.textInput.View()
 	nvis := m.getNVisible()
-	shift := choice - nvis + 1
-	if shift < 0 {
-		shift = 0
-	}
+	shift := m.Shift
+	debug := fmt.Sprintf("\nlen(filtered): %d ~ choice: %d ~ nvis: %d ~ m.shift: %d", len(m.filtered), choice, nvis, shift)
+	choices = choices + debug
 	for i := 0; i < m.nvis; i++ {
 		if i < nvis {
 			choices = choices + "\n" + checkbox(m.filtered[i+shift], i+shift == choice)
