@@ -18,6 +18,17 @@
             "mode": "auto",
             "program": "${workspaceFolder}",
             "env": { "verbose": "true" },
+        },
+        {
+            "name": "Launch bubbletea",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}",
+            "env": { 
+                "ptest": "1",
+                "PAGER_LOG":"debug.log"
+            },
         }
 
     ]
