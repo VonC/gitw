@@ -12,6 +12,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"time"
 
 	_ "embed"
 
@@ -56,6 +57,14 @@ func test() {
 	}
 }
 
+type tickMsg struct{}
+
+func tick() tea.Cmd {
+	return tea.Tick(500*time.Millisecond, func(time.Time) tea.Msg {
+		return tickMsg{}
+	})
+}
+
 type model struct {
 	Choice    int
 	Chosen    bool
@@ -67,6 +76,7 @@ type model struct {
 	Shift     int
 	lastValue string
 	async     bool
+	elapsed   int
 }
 
 func initialModel() tea.Model {
@@ -78,7 +88,10 @@ func initialModel() tea.Model {
 	ti.Width = 20
 
 	list := strings.Split(usersf, "\n")
-	list = nil
+	async := true
+	if async {
+		list = nil
+	}
 
 	initialModel := model{
 		Choice:    -1,
@@ -88,7 +101,7 @@ func initialModel() tea.Model {
 		choices:   list,
 		nvis:      8,
 		Shift:     0,
-		async:     true,
+		async:     async,
 	}
 	initialModel.filtered = initialModel.choices
 	if initialModel.isEmpty() && !initialModel.async {
@@ -102,7 +115,7 @@ func initialModel() tea.Model {
 }
 
 func (m model) Init() tea.Cmd {
-	return textinput.Blink
+	return tea.Batch(textinput.Blink, tick())
 }
 
 // Main update function.
@@ -153,6 +166,8 @@ func (m *model) getNVisible() int {
 func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	lfiltered := len(m.filtered)
 	esc := false
+	var cmdElapsed tea.Cmd
+
 	switch msg := msg.(type) {
 
 	case tea.KeyMsg:
@@ -187,6 +202,16 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 				m.lastValue = ""
 			}
 		}
+	case tickMsg:
+		m.elapsed = m.elapsed + 500
+		m.textInput.Placeholder = fmt.Sprintf("<Wait for list computation> (%d)", m.elapsed)
+		if m.elapsed < 2500 {
+			cmdElapsed = tick()
+		} else {
+			m.choices = strings.Split(usersf, "\n")
+			m.filtered = m.choices
+			m.textInput.Placeholder = "<Select User>"
+		}
 	}
 
 	nvis := m.getNVisible()
@@ -217,9 +242,9 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 		m.filtered = m.choices
 	}
 	if m.isEmpty() {
-		return m, nil
+		cmd = nil
 	}
-	return m, cmd
+	return m, tea.Batch(cmd, cmdElapsed)
 }
 
 func (m *model) isEmpty() bool {
