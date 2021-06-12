@@ -91,8 +91,12 @@ func initialModel() tea.Model {
 		async:     true,
 	}
 	initialModel.filtered = initialModel.choices
-	if (initialModel.choices == nil || len(initialModel.choices) == 0) && !initialModel.async {
+	if initialModel.isEmpty() && !initialModel.async {
 		log.Fatalf("Empty initial list means async should be set")
+	}
+	if initialModel.isEmpty() {
+		ti.Placeholder = "<Wait for list computation>"
+		initialModel.textInput = ti
 	}
 	return &initialModel
 }
