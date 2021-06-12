@@ -186,6 +186,7 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	m.textInput, cmd = m.textInput.Update(msg)
 	v := m.textInput.Value()
+	//v = "T"
 	if v != "" && (v != m.lastValue || esc) && (m.Choice < 0 || v != m.filtered[m.Choice]) {
 		m.filtered = m.filter(v)
 		m.Choice = -1
@@ -207,18 +208,22 @@ func (m *model) updateText(text string) {
 }
 
 func (m model) filter(v string) []string {
-	matches := fuzzy.RankFindNormalizedFold(v, m.choices)
+	source := v
+	matches := fuzzy.RankFindNormalizedFold(source, m.choices)
 	sort.Sort(matches) // [{whl wheel 2 2} {whl cartwheel 6 0}]
 	res := make([]string, 0)
+	//dbg := fmt.Sprintf("matches for source '%s': ", source)
 	for _, match := range matches {
+		//dbg = dbg + fmt.Sprintf(" (%s %d <= %d)", match.Target, match.Distance, len(m.choices[match.OriginalIndex]))
 		if match.Distance < 0 {
 			continue
 		}
-		if match.Distance == len(m.choices[match.OriginalIndex]) {
+		if match.Distance > len(m.choices[match.OriginalIndex]) {
 			continue
 		}
 		res = append(res, match.Target)
 	}
+	//log.Println(dbg)
 	return res
 }
 
