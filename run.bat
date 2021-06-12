@@ -14,5 +14,12 @@ if exist senv.bat (
     call senv.bat
 )
 rem @echo on
-del debug.log 2>NUL
+if not "%PAGER_LOG%" == "" (
+    del "%PAGER_LOG%" 2>NUL
+)
 call "%dirname%.exe" %*
+if errorlevel 1 (
+    if not "%PAGER_LOG%" == "" (
+        type "%PAGER_LOG%" 2>NUL
+    )
+)
