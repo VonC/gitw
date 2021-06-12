@@ -192,6 +192,12 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 		m.Shift = 0
 		m.lastValue = v
 	}
+	if v == "" {
+		m.Choice = -1
+		m.Shift = 0
+		m.lastValue = ""
+		m.filtered = m.choices
+	}
 	return m, cmd
 }
 
