@@ -14,4 +14,5 @@ if exist senv.bat (
     call senv.bat
 )
 rem @echo on
+del debug.log 2>NUL
 call "%dirname%.exe" %*
