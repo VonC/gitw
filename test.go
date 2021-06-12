@@ -75,12 +75,15 @@ func initialModel() tea.Model {
 	ti.CharLimit = 156
 	ti.Width = 20
 
+	list := strings.Split(usersf, "\n")
+	list = nil
+
 	initialModel := model{
 		Choice:    -1,
 		Chosen:    false,
 		Quitting:  false,
 		textInput: ti,
-		choices:   strings.Split(usersf, "\n"),
+		choices:   list,
 		nvis:      8,
 		Shift:     0,
 	}
@@ -157,7 +160,9 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			if m.Choice <= -1 {
 				m.Choice = lfiltered - 1
 			}
-			m.updateText(m.filtered[m.Choice])
+			if m.Choice >= 0 {
+				m.updateText(m.filtered[m.Choice])
+			}
 		case "enter":
 			m.Chosen = true
 			return m, nil
