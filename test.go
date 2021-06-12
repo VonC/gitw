@@ -88,6 +88,7 @@ func initialModel() tea.Model {
 		choices:   list,
 		nvis:      8,
 		Shift:     0,
+		async:     true,
 	}
 	initialModel.filtered = initialModel.choices
 	if (initialModel.choices == nil || len(initialModel.choices) == 0) && !initialModel.async {
