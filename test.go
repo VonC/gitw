@@ -195,7 +195,9 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	}
 
 	var cmd tea.Cmd
-	m.textInput, cmd = m.textInput.Update(msg)
+	if !m.isEmpty() {
+		m.textInput, cmd = m.textInput.Update(msg)
+	}
 	v := m.textInput.Value()
 	//v = "T"
 	if v != "" && (v != m.lastValue || esc) && (m.Choice < 0 || v != m.filtered[m.Choice]) {
