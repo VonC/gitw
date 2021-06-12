@@ -8,6 +8,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"sort"
 	"strings"
@@ -65,6 +66,7 @@ type model struct {
 	nvis      int
 	Shift     int
 	lastValue string
+	async     bool
 }
 
 func initialModel() tea.Model {
@@ -88,6 +90,9 @@ func initialModel() tea.Model {
 		Shift:     0,
 	}
 	initialModel.filtered = initialModel.choices
+	if (initialModel.choices == nil || len(initialModel.choices) == 0) && !initialModel.async {
+		log.Fatalf("Empty initial list means async should be set")
+	}
 	return &initialModel
 }
 
