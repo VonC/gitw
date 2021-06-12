@@ -210,7 +210,14 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 		m.lastValue = ""
 		m.filtered = m.choices
 	}
+	if m.isEmpty() {
+		return m, nil
+	}
 	return m, cmd
+}
+
+func (m *model) isEmpty() bool {
+	return m.choices == nil || len(m.choices) == 0
 }
 
 func (m *model) updateText(text string) {
