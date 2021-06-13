@@ -9,6 +9,8 @@ package main
 import (
 	"fmt"
 	"gitw/internal/async"
+	"gitw/internal/choices"
+	"gitw/internal/osutils"
 	"log"
 	"os"
 	"sort"
@@ -84,13 +86,27 @@ type model struct {
 }
 
 type assyncManager interface {
-	CachedChoices() []string
-	RetrievedChoices() []string
+	choices.ChoicesManager
 	IsActive() bool
 	PlaceHolder() string
 	Increment()
 	HasTimedOut() bool
 	Interval() time.Duration
+}
+
+type initChoiceManager struct{}
+
+func (icm *initChoiceManager) CachedChoices() []string {
+	if osutils.FileExist("initcached2.txt") {
+		return osutils.LinesFrom("initcached2.txt")
+	}
+	if osutils.FileExist("initcached1.txt") {
+		return osutils.LinesFrom("initcached1.txt")
+	}
+	return nil
+}
+func (icm *initChoiceManager) RetrievedChoices() []string {
+	return nil
 }
 
 func initialModel() tea.Model {
@@ -115,6 +131,8 @@ func initialModel() tea.Model {
 		asyncmgr:    &async.NoAsync{},
 		placeHolder: ph,
 	}
+	icm := &initChoiceManager{}
+	initialModel.asyncmgr = async.NewInitAsync(500, 5000, icm)
 	if initialModel.asyncmgr.IsActive() {
 		initialModel.choices = nil
 	}
