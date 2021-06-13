@@ -8,6 +8,7 @@ package main
 
 import (
 	"fmt"
+	"gitw/internal/async"
 	"log"
 	"os"
 	"sort"
@@ -59,63 +60,77 @@ func test() {
 
 type tickMsg struct{}
 
-func tick() tea.Cmd {
-	return tea.Tick(500*time.Millisecond, func(time.Time) tea.Msg {
+func tick(interval time.Duration) tea.Cmd {
+	if interval <= 0 {
+		return nil
+	}
+	return tea.Tick(interval*time.Millisecond, func(time.Time) tea.Msg {
 		return tickMsg{}
 	})
 }
 
 type model struct {
-	Choice    int
-	Chosen    bool
-	Quitting  bool
-	textInput textinput.Model
-	choices   []string
-	filtered  []string
-	nvis      int
-	Shift     int
-	lastValue string
-	async     bool
-	elapsed   int
+	Choice      int
+	Chosen      bool
+	Quitting    bool
+	textInput   textinput.Model
+	choices     []string
+	filtered    []string
+	nvis        int
+	Shift       int
+	lastValue   string
+	asyncmgr    assyncManager
+	placeHolder string
+}
+
+type assyncManager interface {
+	CachedChoices() []string
+	RetrievedChoices() []string
+	IsActive() bool
+	PlaceHolder() string
+	Increment()
+	HasTimedOut() bool
+	Interval() time.Duration
 }
 
 func initialModel() tea.Model {
 
+	ph := "<Select User>"
 	ti := textinput.NewModel()
-	ti.Placeholder = "<Select User>"
+	ti.Placeholder = ph
 	ti.Focus()
 	ti.CharLimit = 156
 	ti.Width = 20
 
 	list := strings.Split(usersf, "\n")
-	async := true
-	if async {
-		list = nil
-	}
 
 	initialModel := model{
-		Choice:    -1,
-		Chosen:    false,
-		Quitting:  false,
-		textInput: ti,
-		choices:   list,
-		nvis:      8,
-		Shift:     0,
-		async:     async,
+		Choice:      -1,
+		Chosen:      false,
+		Quitting:    false,
+		textInput:   ti,
+		choices:     list,
+		nvis:        8,
+		Shift:       0,
+		asyncmgr:    &async.NoAsync{},
+		placeHolder: ph,
+	}
+	if initialModel.asyncmgr.IsActive() {
+		initialModel.choices = nil
 	}
 	initialModel.filtered = initialModel.choices
-	if initialModel.isEmpty() && !initialModel.async {
+	if initialModel.isEmpty() && !initialModel.asyncmgr.IsActive() {
 		log.Fatalf("Empty initial list means async should be set")
 	}
 	if initialModel.isEmpty() {
-		ti.Placeholder = "<Wait for list computation>"
+		ti.Placeholder = initialModel.asyncmgr.PlaceHolder()
 		initialModel.textInput = ti
 	}
 	return &initialModel
 }
 
 func (m model) Init() tea.Cmd {
-	return tea.Batch(textinput.Blink, tick())
+	return tea.Batch(textinput.Blink, tick(m.asyncmgr.Interval()))
 }
 
 // Main update function.
