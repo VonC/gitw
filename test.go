@@ -218,14 +218,16 @@ func updateChoices(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 		}
 	case tickMsg:
-		m.elapsed = m.elapsed + 500
-		m.textInput.Placeholder = fmt.Sprintf("<Wait for list computation> (%d)", m.elapsed)
-		if m.elapsed < 2500 {
-			cmdElapsed = tick()
+		if m.asyncmgr.IsActive() && m.asyncmgr.HasTimedOut() {
+			log.Fatalf("Time out")
+		}
+		if m.asyncmgr.IsActive() {
+			m.asyncmgr.Increment()
+			m.textInput.Placeholder = m.asyncmgr.PlaceHolder()
+			cmdElapsed = tick(m.asyncmgr.Interval())
 		} else {
-			m.choices = strings.Split(usersf, "\n")
-			m.filtered = m.choices
-			m.textInput.Placeholder = "<Select User>"
+			m.textInput.Placeholder = m.placeHolder
+			m.choices = m.asyncmgr.RetrievedChoices()
 		}
 	}
 
