@@ -51,7 +51,7 @@ func main() {
 	}
 	var user *user
 	ub := newUsersBase(gitusersPath())
-	fmt.Printf("-----------\n%s\n", ub.users.String())
+	// fmt.Printf("-----------\n%s\n", ub.users.String())
 	if asship != "" {
 		if verbose {
 			fmt.Printf("SSH connection detected: '%s'\n", asship)
