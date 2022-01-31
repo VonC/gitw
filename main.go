@@ -219,12 +219,6 @@ type usersBase struct {
 	hasMultipleEntries bool
 }
 
-type choice struct {
-	user     *user
-	ub       *usersBase
-	mustExit bool
-}
-
 var re = regexp.MustCompile(`(?m)^(?P<ip>[^ ~]+)~(?P<name>.*?)~(?P<email>(.*?)@(.*))`)
 
 func newUsersBase(file string) *usersBase {
@@ -299,7 +293,7 @@ func (ub *usersBase) getUser(sship sship) *user {
 	return nil
 }
 
-func (c *choice) userSelector(in string) {
+func (ub *usersBase) userSelector(in string) *user {
 	if verbose {
 		fmt.Println("You selected! " + in)
 	}
@@ -309,14 +303,14 @@ func (c *choice) userSelector(in string) {
 		name, err := r.ReadString('\n')
 		if err != nil {
 			fmt.Printf("Error when entering firstname lastname: '%+v'\n", err)
-			return
+			return nil
 		}
 		name = strings.TrimSpace(name)
 		space := regexp.MustCompile(`\s+`)
 		name = space.ReplaceAllString(name, " ")
 		if !strings.Contains(name, " ") {
 			fmt.Printf("Expect firstname (space) lastname, instead of '%s'\n", name)
-			return
+			return nil
 		}
 		in = name
 
@@ -324,26 +318,21 @@ func (c *choice) userSelector(in string) {
 		email, err := r.ReadString('\n')
 		if err != nil {
 			fmt.Printf("Error when entering email: '%+v'\n", err)
-			return
+			return nil
 		}
 		email = strings.TrimSpace(email)
 		if !strings.Contains(email, "@") {
 			fmt.Printf("Expect xxx@yyy email address, instead of '%s'\n", email)
-			return
+			return nil
 		}
 		if strings.Contains(email, " ") {
 			fmt.Printf("Expect no space in an email address, instead of '%s'\n", email)
-			return
+			return nil
 		}
 		u := &user{name: in, email: email}
-		c.ub.recordUser(u, "")
+		ub.recordUser(u, "")
 	}
-	for _, u := range c.ub.users {
-		if u.name == in {
-			c.user = u
-			break
-		}
-	}
+	return ub.userSelector(in)
 }
 
 type resetConsoleMode func()
@@ -357,7 +346,7 @@ func (ub *usersBase) askUserID() *user {
 	users = append(users, "New name")
 	sp := selection.New("Chose a VSCode Worskpace to open:",
 		selection.Choices(users))
-	sp.PageSize = 3
+	//sp.PageSize = 3
 
 	choice, err := sp.RunPrompt()
 	if err != nil {
