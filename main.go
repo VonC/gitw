@@ -18,7 +18,7 @@ import (
 
 	"gitw/version"
 
-	"github.com/c-bata/go-prompt"
+	"github.com/erikgeiser/promptkit/selection"
 )
 
 var verbose bool
@@ -170,6 +170,23 @@ func (us users) addUser(u *user, ip sship) users {
 	return us
 }
 
+func (us users) users() []string {
+	res := make([]string, 0)
+	for _, u := range us {
+		res = append(res, u.name)
+	}
+	return res
+}
+
+func (us users) getUser(name string) *user {
+	for _, u := range us {
+		if u.name == name {
+			return u
+		}
+	}
+	return nil
+}
+
 func (us users) getUserFRomEmail(email string) *user {
 	for _, auser := range us {
 		if auser.email == email {
@@ -282,28 +299,6 @@ func (ub *usersBase) getUser(sship sship) *user {
 	return nil
 }
 
-func (c *choice) exit(_ *prompt.Buffer) {
-	// return
-	// os.Exit(0)
-	c.mustExit = true
-}
-
-func completer(ub *usersBase) prompt.Completer {
-	return func(d prompt.Document) []prompt.Suggest {
-		s := []prompt.Suggest{}
-		for _, u := range ub.users {
-			s = append(s, prompt.Suggest{Text: u.name})
-		}
-		s = append(s, prompt.Suggest{Text: "New name", Description: "Firstname Lastname"})
-		return prompt.FilterFuzzy(s, d.GetWordBeforeCursor(), true)
-	}
-}
-
-func (c *choice) exitIfUserSelected(in string, breakline bool) bool {
-	//fmt.Println("Check " + in)
-	return c.user != nil || c.mustExit
-}
-
 func (c *choice) userSelector(in string) {
 	if verbose {
 		fmt.Println("You selected! " + in)
@@ -351,38 +346,33 @@ func (c *choice) userSelector(in string) {
 	}
 }
 
+type resetConsoleMode func()
+
 func (ub *usersBase) askUserID() *user {
+
+	frc := getResetConsoleMore()
+	defer frc()
+
+	users := ub.users.users()
+	users = append(users, "New name")
+	sp := selection.New("Chose a VSCode Worskpace to open:",
+		selection.Choices(users))
+	sp.PageSize = 3
+
+	choice, err := sp.RunPrompt()
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+
+		os.Exit(1)
+	}
+
 	if verbose {
 		fmt.Println("Ask user")
 	}
 	time.Sleep(500 * time.Millisecond)
 
-	c := &choice{ub: ub}
-	quitOnCtrlC := prompt.KeyBind{
-		Key: prompt.ControlC,
-		Fn:  c.exit,
-	}
-	quitOnEscape := prompt.KeyBind{
-		Key: prompt.Escape,
-		Fn:  c.exit,
-	}
-	fsuggestions := completer(ub)
-	suggestions := fsuggestions(prompt.Document{})
-	p := prompt.New(
-		c.userSelector,
-		fsuggestions,
-		prompt.OptionPrefix(">>> "),
-		prompt.OptionAddKeyBind(quitOnEscape),
-		prompt.OptionAddKeyBind(quitOnCtrlC),
-		prompt.OptionShowCompletionAtStart(),
-		prompt.OptionMaxSuggestion(uint16(len(suggestions))),
-		prompt.OptionCompletionOnDown(),
-		prompt.OptionSetExitCheckerOnInput(c.exitIfUserSelected),
-	)
-	fmt.Println("Please select Sync command.")
-	p.Run()
 	ub.userAsked = true
-	return c.user
+	return ub.users.getUser(choice.String)
 }
 
 func (ub *usersBase) recordUser(u *user, ip sship) {
