@@ -1,0 +1,3 @@
+[submodule "deps/promptkit"]
+	path = deps/promptkit
+	url = https://github.com/VonC/promptkit

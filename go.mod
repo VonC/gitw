@@ -7,3 +7,5 @@ require (
 	github.com/romana/rlog v0.0.0-20171115192701-f018bc92e7d7
 	golang.org/x/sys v0.0.0-20210816183151-1e6c022a8912
 )
+
+replace github.com/erikgeiser/promptkit => ./deps/promptkit
