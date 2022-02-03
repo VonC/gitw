@@ -17,6 +17,7 @@ rem @echo on
 if not "%PAGER_LOG%" == "" (
     del "%PAGER_LOG%" 2>NUL
 )
+del %TEMP%\bash* 2>NUL
 call "%dirname%.exe" %*
 if errorlevel 1 (
     if not "%PAGER_LOG%" == "" (
