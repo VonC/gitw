@@ -339,8 +339,8 @@ type resetConsoleMode func()
 
 func (ub *usersBase) askUserID() *user {
 
-	frc := getResetConsoleMore()
-	defer frc()
+	con, originalConsoleMode := getOriginalConsoleMode()
+	defer resetConsoleMore(con, originalConsoleMode)
 
 	users := ub.users.users()
 	users = append(users, "New name")

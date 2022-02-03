@@ -5,8 +5,10 @@ package main
 
 import "fmt"
 
-func getResetConsoleMore() func() {
-	return func() {
-		fmt.Println("resetConsole Linux")
-	}
+func getOriginalConsoleMode() (windows.Handle, uint32) {
+	return 0, 0
+}
+
+func resetConsoleMore(con windows.Handle, originalConsoleMode uint32) {
+	return
 }
