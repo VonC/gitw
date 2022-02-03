@@ -27,8 +27,10 @@ func getOriginalConsoleMode() (windows.Handle, uint32) {
 func resetConsoleMore(con windows.Handle, originalConsoleMode uint32) {
 	// https://github.com/charmbracelet/bubbletea/issues/121
 	// https://github.com/erikgeiser/coninput/blob/main/example/main.go
-	fmt.Println("resetConsole Windows")
-	resetErr := windows.SetConsoleMode(con, originalConsoleMode)
+	ccon, ccor := getOriginalConsoleMode()
+	fmt.Printf("Restore con %d (vs. current %d), orig %d (vs. current %d)", con, ccon, originalConsoleMode, ccor)
+	resetErr := windows.SetConsoleMode(con, 992)
+	resetErr = windows.SetConsoleMode(con, 503)
 	if resetErr != nil {
 		log.Fatalf("reset console mode: %s", resetErr)
 	}
