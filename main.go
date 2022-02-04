@@ -347,6 +347,7 @@ func (ub *usersBase) askUserID() *user {
 	users = append(users, "New name")
 	sp := selection.New("Chose a VSCode Worskpace to open:",
 		selection.Choices(users))
+	sp.KeyMap.Abort = []string{"esc"}
 	fmt.Printf("sp colorProfile before: %d\n", sp.ColorProfile)
 	sp.ColorProfile = GetColorProfile()
 	fmt.Printf("sp colorProfile after: %d\n", sp.ColorProfile)
