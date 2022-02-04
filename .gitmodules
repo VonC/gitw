@@ -1,3 +1,6 @@
 [submodule "deps/promptkit"]
 	path = deps/promptkit
 	url = https://github.com/VonC/promptkit
+[submodule "deps/console"]
+	path = deps/console
+	url = https://github.com/VonC/console
