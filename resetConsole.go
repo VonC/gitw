@@ -3,12 +3,14 @@
 
 package main
 
-import "fmt"
-
-func getOriginalConsoleMode() (windows.Handle, uint32) {
+func getOriginalConsoleMode() (uintptr, uint32) {
 	return 0, 0
 }
 
-func resetConsoleMore(con windows.Handle, originalConsoleMode uint32) {
+func resetConsoleMore(con uintptr, originalConsoleMode uint32) {
 	return
+}
+
+func GetColorProfile() termenv.Profile {
+	return 0
 }

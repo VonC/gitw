@@ -20,7 +20,6 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/erikgeiser/promptkit/selection"
-	"github.com/muesli/termenv"
 )
 
 var verbose bool
@@ -349,7 +348,7 @@ func (ub *usersBase) askUserID() *user {
 	sp := selection.New("Chose a VSCode Worskpace to open:",
 		selection.Choices(users))
 	fmt.Printf("sp colorProfile before: %d\n", sp.ColorProfile)
-	sp.ColorProfile = termenv.ANSI
+	sp.ColorProfile = GetColorProfile()
 	fmt.Printf("sp colorProfile after: %d\n", sp.ColorProfile)
 	sp.FilterInputPlaceholderStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("86"))
 	sp.AbortFunc = func() error {

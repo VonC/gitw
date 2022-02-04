@@ -7,10 +7,12 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/erikgeiser/coninput"
+	"github.com/muesli/termenv"
 	"golang.org/x/sys/windows"
 )
 
-func getOriginalConsoleMode() (windows.Handle, uint32) {
+func getOriginalConsoleMode() (uintptr, uint32) {
 	con, err := windows.GetStdHandle(windows.STD_INPUT_HANDLE)
 	if err != nil {
 		log.Fatalf("get stdin handle: %s", err)
@@ -21,17 +23,27 @@ func getOriginalConsoleMode() (windows.Handle, uint32) {
 	if err != nil {
 		log.Fatalf("get console mode: %s", err)
 	}
-	return con, originalConsoleMode
+	return uintptr(con), originalConsoleMode
 }
 
-func resetConsoleMore(con windows.Handle, originalConsoleMode uint32) {
+func resetConsoleMore(con uintptr, originalConsoleMode uint32) {
 	// https://github.com/charmbracelet/bubbletea/issues/121
 	// https://github.com/erikgeiser/coninput/blob/main/example/main.go
+	// https://github.com/microsoft/terminal/issues/8750#issuecomment-759088381
 	ccon, ccor := getOriginalConsoleMode()
-	fmt.Printf("Restore con %d (vs. current %d), orig %d (vs. current %d)", con, ccon, originalConsoleMode, ccor)
-	resetErr := windows.SetConsoleMode(con, 992)
-	resetErr = windows.SetConsoleMode(con, 503)
+	fmt.Printf("Restore con %d (vs. current %d), orig %d (vs. current %d)\n", con, ccon, originalConsoleMode, ccor)
+
+	fmt.Println("\noriginalConsoleMode:", coninput.DescribeInputMode(originalConsoleMode))
+	fmt.Println("\nccor:", coninput.DescribeInputMode(ccor))
+
+	resetErr := windows.SetConsoleMode(windows.Handle(con), originalConsoleMode)
 	if resetErr != nil {
 		log.Fatalf("reset console mode: %s", resetErr)
 	}
+	//windows.SetConsoleMode(1748, 7)
+	//windows.SetConsoleMode(84, 7)
+}
+
+func GetColorProfile() termenv.Profile {
+	return termenv.ANSI
 }
