@@ -31,10 +31,10 @@ func resetConsoleMore(con uintptr, originalConsoleMode uint32) {
 	// https://github.com/erikgeiser/coninput/blob/main/example/main.go
 	// https://github.com/microsoft/terminal/issues/8750#issuecomment-759088381
 	ccon, ccor := getOriginalConsoleMode()
-	fmt.Printf("Restore con %d (vs. current %d), orig %d (vs. current %d)\n", con, ccon, originalConsoleMode, ccor)
+	fmt.Printf("*** Restore con %d (vs. current %d), orig %d (vs. current %d)\n", con, ccon, originalConsoleMode, ccor)
 
-	fmt.Println("\noriginalConsoleMode:", coninput.DescribeInputMode(originalConsoleMode))
-	fmt.Println("\nccor:", coninput.DescribeInputMode(ccor))
+	fmt.Printf("\noriginalConsoleMode %d: %s\n", originalConsoleMode, coninput.DescribeInputMode(originalConsoleMode))
+	fmt.Printf("\ncurrent mode %d: %s", ccor, coninput.DescribeInputMode(ccor))
 
 	resetErr := windows.SetConsoleMode(windows.Handle(con), originalConsoleMode)
 	if resetErr != nil {
